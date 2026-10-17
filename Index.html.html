@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F2A2E">
+<title>Menu</title>
+<!--
+  ════════════════════════════════════════════════════════════════════
+  menu.html — Customer menu as ONE plain HTML file.
+  Host it anywhere (GitHub Pages, your website, any web hosting).
+  The QR code on each table opens:   https://YOUR-SITE/menu.html?table=T01
+
+  It talks to your Google Apps Script only for data (menu, order, status).
+  Customers never see a script.google.com page, never need a Google login.
+  No libraries, no fonts to download, no third-party service.
+
+  ▶ ONLY ONE THING TO EDIT: paste your Apps Script Web app URL (ends in /exec)
+  ════════════════════════════════════════════════════════════════════
+-->
+<script>
+  var API_URL = 'PASTE_YOUR_EXEC_URL_HERE';
+</script>
+<style>
+/* ── Tokens: peacock night + brass (dark), celadon + brass (light) ── */
+:root {
+  --bg: #0F2A2E;
+  --bg-2: #13343A;
+  --surface: #17393F;
+  --line: rgba(243, 236, 221, .12);
+  --text: #F3ECDD;
+  --muted: #A7BBB7;
+  --brass: #D4A64A;
+  --brass-2: #E8C77E;
+  --on-brass: #1A1405;
+  --veg: #3FA34D;
+  --nonveg: #D9483B;
+  --egg: #E2A72E;
+  --ok: #4CB86A;
+  --err: #E5604F;
+  --shadow: 0 10px 30px rgba(0, 0, 0, .35);
+  --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", "URW Palladio L", Georgia, "Noto Serif Devanagari", serif;
+  --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", "Helvetica Neue", Arial, sans-serif;
+  color-scheme: dark;
+}
+html[data-theme="light"] {
+  --bg: #EEF3EF;
+  --bg-2: #E2EBE5;
+  --surface: #FFFFFF;
+  --line: rgba(18, 48, 47, .12);
+  --text: #12302F;
+  --muted: #5B716E;
+  --brass: #A87B22;
+  --brass-2: #8A6416;
+  --on-brass: #FFFFFF;
+  --shadow: 0 10px 30px rgba(18, 48, 47, .12);
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 16px/1.5 var(--sans); min-height: 100vh; }
+button, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.hidden { display: none !important; }
+.wrap { max-width: 680px; margin: 0 auto; padding: 0 18px; }
+.hi { color: var(--muted); font-family: var(--sans); font-weight: 400; }
+
+/* ── Hero: the one memorable element ── */
+.hero { position: relative; padding: max(22px, env(safe-area-inset-top)) 0 0; background: radial-gradient(120% 90% at 85% 0%, rgba(212, 166, 74, .18), transparent 60%), var(--bg); }
+.hero-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; }
+.brand h1 { font: 600 clamp(30px, 8.5vw, 44px)/1.05 var(--serif); letter-spacing: -.01em; margin: 6px 0 6px; }
+.brand p { margin: 0; color: var(--muted); font: italic 16px/1.4 var(--serif); }
+.medallion { flex: none; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; text-align: center;
+  background: radial-gradient(circle at 35% 30%, var(--brass-2), var(--brass) 60%, #9C7428); color: var(--on-brass);
+  box-shadow: inset 0 0 0 3px rgba(255, 255, 255, .25), inset 0 0 0 6px rgba(0, 0, 0, .12), var(--shadow); }
+.medallion small { display: block; font: 600 11px/1 var(--sans); letter-spacing: .04em; opacity: .85; }
+.medallion b { display: block; font: 700 24px/1 var(--serif); margin-top: 3px; }
+.hero-meta { display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 16px 0 0; font-size: 14px; color: var(--muted); }
+.hero-meta .open::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); margin-right: 6px; vertical-align: 1px; }
+.hero-meta .closed::before { background: var(--err); }
+.jaali { height: 18px; margin-top: 18px; opacity: .55;
+  background:
+    radial-gradient(circle at 9px 9px, transparent 5px, var(--brass) 5.5px, var(--brass) 6.5px, transparent 7px) 0 0 / 18px 18px,
+    linear-gradient(var(--brass), var(--brass)) 0 50% / 100% 1px no-repeat; }
+.hero-meta { justify-content: space-between; align-items: center; }
+.theme-btn { height: 34px; padding: 0 14px; border-radius: 17px; border: 1px solid var(--line); background: transparent; color: var(--muted); font-size: 13.5px; font-weight: 600; }
+
+/* ── Sticky search + categories ── */
+.bar { position: sticky; top: 0; z-index: 20; background: var(--bg); padding: 12px 0 0; border-bottom: 1px solid var(--line); }
+.search { display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 14px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); }
+.search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 16px; }
+.search input::placeholder { color: var(--muted); }
+.tabs { display: flex; gap: 22px; overflow-x: auto; scrollbar-width: none; margin-top: 6px; }
+.tabs::-webkit-scrollbar { display: none; }
+.tab { flex: none; border: 0; background: none; padding: 12px 0 11px; color: var(--muted); font-weight: 600; font-size: 15px; border-bottom: 2px solid transparent; white-space: nowrap; }
+.tab.on { color: var(--text); border-bottom-color: var(--brass); }
+
+/* ── Notices ── */
+.notice { margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-2); font-size: 14.5px; }
+.notice.warn { border-color: rgba(229, 96, 79, .45); }
+.notice button { border: 0; background: none; color: var(--brass); font-weight: 700; padding: 0; }
+
+/* ── Dish list ── */
+.section-title { font: 600 24px/1.2 var(--serif); margin: 30px 0 4px; scroll-margin-top: 130px; }
+.section-count { color: var(--muted); font-size: 13.5px; margin-bottom: 4px; }
+.dish { display: flex; gap: 16px; padding: 20px 0; border-bottom: 1px solid var(--line); }
+.dish:last-child { border-bottom: 0; }
+.dish-body { flex: 1; min-width: 0; }
+.mark { display: inline-flex; width: 15px; height: 15px; border: 1.6px solid var(--veg); border-radius: 3px; align-items: center; justify-content: center; vertical-align: -2px; margin-right: 8px; }
+.mark i { width: 7px; height: 7px; border-radius: 50%; background: var(--veg); }
+.mark.NONVEG { border-color: var(--nonveg); }
+.mark.NONVEG i { width: 0; height: 0; border-radius: 0; background: none; border-left: 4.5px solid transparent; border-right: 4.5px solid transparent; border-bottom: 8px solid var(--nonveg); }
+.mark.EGG { border-color: var(--egg); }
+.mark.EGG i { background: var(--egg); }
+.tag { display: inline-block; font-size: 12.5px; font-weight: 700; color: var(--brass); margin-bottom: 4px; }
+.tag::before { content: "✦ "; }
+.dish h3 { margin: 0; font: 600 18.5px/1.25 var(--serif); }
+.dish .hn { font-size: 14px; margin-top: 1px; }
+.dish .price { font-weight: 700; margin-top: 6px; font-size: 16px; }
+.dish .desc { color: var(--muted); font-size: 14px; margin: 6px 0 0; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dish-side { flex: none; width: 116px; display: flex; flex-direction: column; align-items: center; }
+.photo { width: 116px; height: 104px; border-radius: 14px; overflow: hidden; background: var(--bg-2); display: grid; place-items: center; font-size: 44px; }
+.photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.add, .step { width: 96px; height: 40px; border-radius: 10px; margin-top: -18px; position: relative; box-shadow: var(--shadow); }
+.dish-side.no-photo .add, .dish-side.no-photo .step { margin-top: 10px; }
+.dish-side.no-photo .photo { height: 72px; width: 96px; font-size: 34px; }
+.add { border: 1.5px solid var(--brass); background: var(--surface); color: var(--brass); font-weight: 800; letter-spacing: .02em; }
+.add:disabled { opacity: .45; }
+.step { display: flex; align-items: center; justify-content: space-between; background: var(--brass); color: var(--on-brass); overflow: hidden; }
+.step button { width: 34px; height: 100%; border: 0; background: transparent; color: inherit; font-size: 20px; font-weight: 700; }
+.step span { font-weight: 800; }
+.empty { text-align: center; color: var(--muted); padding: 50px 10px; }
+.empty b { display: block; color: var(--text); font: 600 20px var(--serif); margin-bottom: 4px; }
+
+/* ── Cart bar ── */
+.cartbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; padding: 10px 14px max(10px, env(safe-area-inset-bottom)); background: linear-gradient(transparent, var(--bg) 35%); }
+.cartbar button { width: 100%; max-width: 652px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; height: 58px; padding: 0 18px; border: 0; border-radius: 14px; background: var(--brass); color: var(--on-brass); font-weight: 800; font-size: 16px; box-shadow: var(--shadow); }
+.cartbar small { display: block; font-weight: 600; font-size: 12.5px; opacity: .8; text-align: left; }
+.cartbar.pop button { animation: pop .28s ease; }
+@keyframes pop { 50% { transform: scale(1.03); } }
+
+/* ── Sheet (cart) ── */
+.scrim { position: fixed; inset: 0; background: rgba(4, 12, 14, .6); z-index: 40; }
+.sheet { position: fixed; left: 0; right: 0; bottom: 0; z-index: 45; max-height: 92vh; overflow: auto; background: var(--surface); border-radius: 22px 22px 0 0; padding: 8px 18px max(18px, env(safe-area-inset-bottom)); max-width: 680px; margin: 0 auto; box-shadow: var(--shadow); animation: rise .24s ease; }
+@keyframes rise { from { transform: translateY(30px); opacity: .6; } }
+.grip { width: 42px; height: 5px; border-radius: 3px; background: var(--line); margin: 6px auto 14px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; }
+.sheet h2 { font: 600 24px var(--serif); margin: 0; }
+.x { width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: transparent; font-size: 16px; }
+.line { display: flex; align-items: center; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.line .nm { flex: 1; min-width: 0; }
+.line .nm b { font-family: var(--serif); font-size: 17px; font-weight: 600; }
+.line .nm div { color: var(--muted); font-size: 13.5px; }
+.line .step { margin: 0; box-shadow: none; }
+.sum { margin: 14px 0 6px; }
+.sum div { display: flex; justify-content: space-between; padding: 3px 0; color: var(--muted); }
+.sum .grand { color: var(--text); font: 600 22px var(--serif); border-top: 1px dashed var(--line); margin-top: 8px; padding-top: 10px; }
+.f { display: block; margin-top: 14px; }
+.f span { display: block; font-size: 13.5px; font-weight: 600; color: var(--muted); margin-bottom: 6px; }
+.f input, .f textarea { width: 100%; min-height: 48px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--bg-2); outline: none; font-size: 16px; }
+.f textarea { min-height: 72px; resize: vertical; }
+.f input:focus, .f textarea:focus { border-color: var(--brass); }
+.primary { width: 100%; height: 56px; border: 0; border-radius: 14px; background: var(--brass); color: var(--on-brass); font-weight: 800; font-size: 16.5px; margin-top: 18px; }
+.primary:disabled { opacity: .55; }
+.secondary { width: 100%; height: 52px; border-radius: 14px; border: 1.5px solid var(--line); background: transparent; font-weight: 700; margin-top: 10px; display: flex; align-items: center; justify-content: center; text-decoration: none; color: var(--text); }
+.fine { text-align: center; color: var(--muted); font-size: 13px; margin: 12px 0 0; }
+
+/* ── Tracking ── */
+.track { padding: 26px 0 40px; }
+.track .ordno { color: var(--muted); font-size: 14px; }
+.track h2 { font: 600 30px/1.15 var(--serif); margin: 4px 0 4px; }
+.status-line { font: italic 18px/1.4 var(--serif); color: var(--brass); margin: 0 0 22px; }
+.progress { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 8px; }
+.progress i { height: 5px; border-radius: 3px; background: var(--line); }
+.progress i.done { background: var(--brass); }
+.progress i.now { background: linear-gradient(90deg, var(--brass) 0 50%, var(--line) 50%); background-size: 200% 100%; animation: flow 1.6s linear infinite; }
+@keyframes flow { from { background-position: 100% 0; } to { background-position: 0 0; } }
+.progress-labels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; font-size: 12.5px; color: var(--muted); }
+.progress-labels .on { color: var(--text); font-weight: 700; }
+.bill { margin-top: 26px; padding: 18px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); }
+.bill h3 { margin: 0 0 2px; font: 600 20px var(--serif); }
+.bill .meta { color: var(--muted); font-size: 13.5px; margin-bottom: 10px; }
+.bill .row { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
+.bill .row.t { border-top: 1px dashed var(--line); margin-top: 6px; padding-top: 10px; font: 600 19px var(--serif); }
+.points { margin-top: 14px; padding: 14px 16px; border-radius: 14px; border: 1px solid var(--brass); color: var(--text); }
+.points b { color: var(--brass); }
+.cancel-box { padding: 14px 16px; border-radius: 14px; border: 1px solid var(--err); margin-bottom: 18px; }
+
+/* ── Toast ── */
+#toast { position: fixed; left: 50%; bottom: 92px; transform: translate(-50%, 16px); opacity: 0; pointer-events: none; z-index: 60; max-width: calc(100% - 32px);
+  background: var(--text); color: var(--bg); padding: 12px 18px; border-radius: 12px; font-weight: 600; font-size: 14.5px; text-align: center; transition: .22s; box-shadow: var(--shadow); }
+#toast.show { opacity: 1; transform: translate(-50%, 0); }
+#toast.err { background: var(--err); color: #fff; }
+
+.loader { padding: 80px 0; text-align: center; color: var(--muted); }
+.loader i { display: block; width: 34px; height: 34px; margin: 0 auto 14px; border-radius: 50%; border: 3px solid var(--line); border-top-color: var(--brass); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+
+/* ── Print: bill only ── */
+#printArea { display: none; }
+@media print {
+  body > *:not(#printArea) { display: none !important; }
+  #printArea { display: block !important; color: #000; font: 13px/1.5 ui-monospace, Menlo, Consolas, monospace; max-width: 300px; margin: 0 auto; }
+  #printArea .row { display: flex; justify-content: space-between; }
+  #printArea hr { border: 0; border-top: 1px dashed #000; }
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="hero-top">
+      <div class="brand">
+        <h1 id="name">Menu</h1>
+        <p id="tagline"></p>
+      </div>
+      <div class="medallion hidden" id="medal" aria-label="Your table"><div><small>Table</small><b id="tableNo"></b></div></div>
+    </div>
+    <div class="hero-meta">
+      <span id="openState"></span>
+      <button class="theme-btn" id="themeBtn" type="button">Light mode</button>
+    </div>
+  </div>
+  <div class="jaali" aria-hidden="true"></div>
+</header>
+
+<main id="app">
+  <div class="loader" id="loader"><i></i>Opening the menu… / मेन्यू खुल रहा है…</div>
+
+  <section id="fatal" class="wrap hidden">
+    <div class="empty"><b id="fatalTitle">Scan the QR code on your table</b><span id="fatalMsg"></span>
+      <button class="secondary" type="button" onclick="location.reload()">Try again / फिर कोशिश करें</button></div>
+  </section>
+
+  <section id="menuView" class="hidden">
+    <div class="bar"><div class="wrap">
+      <label class="search"><span aria-hidden="true">⌕</span><input id="q" type="search" placeholder="Search dishes / व्यंजन खोजें" autocomplete="off"></label>
+      <nav class="tabs" id="tabs" aria-label="Categories"></nav>
+    </div></div>
+    <div class="wrap">
+      <div id="notices"></div>
+      <div id="list"></div>
+      <div style="height:110px"></div>
+    </div>
+  </section>
+
+  <section id="trackView" class="wrap hidden"></section>
+</main>
+
+<div class="cartbar hidden" id="cartbar">
+  <button type="button" id="cartBtn"><span><small id="cartCount"></small><span id="cartTotal"></span></span><span>View order</span></button>
+</div>
+
+<div class="scrim hidden" id="scrim"></div>
+<div class="sheet hidden" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grip"></div>
+  <div class="sheet-head"><h2 id="sheetTitle">Your order <span class="hi">/ आपका ऑर्डर</span></h2><button class="x" id="closeSheet" type="button" aria-label="Close">✕</button></div>
+  <div id="lines"></div>
+  <div class="sum" id="sum"></div>
+  <label class="f"><span>Your name / आपका नाम</span><input id="cName" maxlength="60" autocomplete="name" placeholder="Rahul"></label>
+  <label class="f"><span>Mobile number / मोबाइल नंबर</span><input id="cPhone" type="tel" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="98765 43210"></label>
+  <label class="f"><span>Note for the kitchen / किचन के लिए नोट</span><textarea id="cNote" maxlength="200" placeholder="Less spicy, no onion / कम मसाला, बिना प्याज़"></textarea></label>
+  <button class="primary" id="placeBtn" type="button">Place order / ऑर्डर भेजें</button>
+  <p class="fine">You pay at the counter after your meal. / भुगतान खाने के बाद काउंटर पर।</p>
+</div>
+
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* ═════════ setup ═════════ */
+  var $ = function (s) { return document.querySelector(s); };
+  var params = new URLSearchParams(location.search);
+  var TABLE = (params.get('table') || '').trim().toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 12);
+  var CUR = '₹';
+  var POLL_MS = 8000;
+  var S = { d: null, items: {}, cart: {}, q: '', ref: '', track: null, timer: null, last: '', order: null };
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; });
+  }
+  function money(n) { return CUR + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 }); }
+  function r2(n) { return Math.round((Number(n) || 0) * 100) / 100; }
+
+  var mem = {};
+  function save(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { mem[k] = v; } }
+  function load(k, d) { try { var v = localStorage.getItem(k); return v == null ? (k in mem ? mem[k] : d) : JSON.parse(v); } catch (e) { return k in mem ? mem[k] : d; } }
+  var CART_KEY = 'pm_cart_' + TABLE, ORDERS_KEY = 'pm_orders_' + TABLE;
+
+  var tt = null;
+  function toast(msg, err) {
+    var t = $('#toast');
+    t.textContent = msg; t.className = 'show' + (err ? ' err' : '');
+    clearTimeout(tt); tt = setTimeout(function () { t.className = ''; }, err ? 4500 : 2600);
+  }
+
+  /* ═════════ API (Apps Script /exec) ═════════ */
+  function configured() { return /^https:\/\/script\.google\.com\/.+\/exec$/.test(API_URL); }
+
+  function request(url, opts) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, 25000);
+    opts = opts || {};
+    if (ctl) opts.signal = ctl.signal;
+    opts.redirect = 'follow';
+    return fetch(url, opts).then(function (r) {
+      if (!r.ok) throw new Error('Server error ' + r.status);
+      return r.text();
+    }).then(function (txt) {
+      var j;
+      try { j = JSON.parse(txt); } catch (e) { throw new Error('The restaurant server did not answer correctly. Ask the staff to check the app link.'); }
+      if (!j.ok) { var er = new Error(j.error || 'Something went wrong'); er.server = true; throw er; }
+      return j.data;
+    }).catch(function (e) {
+      if (e.server) throw e;
+      if (e.name === 'AbortError') throw new Error('Network is slow. Please try again. / नेटवर्क धीमा है।');
+      throw new Error(e.message && /Server error|answer correctly/.test(e.message) ? e.message : 'No internet connection. Please try again. / इंटरनेट जाँचें।');
+    }).then(function (d) { clearTimeout(timer); return d; }, function (e) { clearTimeout(timer); throw e; });
+  }
+  function apiGet(action, q) {
+    var qs = Object.keys(q || {}).map(function (k) { return encodeURIComponent(k) + '=' + encodeURIComponent(q[k]); }).join('&');
+    return request(API_URL + '?api=' + action + (qs ? '&' + qs : '') + '&_=' + Date.now(), { method: 'GET' });
+  }
+  function apiPost(body) {
+    // text/plain = "simple" request, so the browser sends it straight to Google without a CORS preflight
+    return request(API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(body) });
+  }
+
+  /* ═════════ theme ═════════ */
+  function theme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    document.querySelector('meta[name=theme-color]').setAttribute('content', t === 'light' ? '#EEF3EF' : '#0F2A2E');
+    var b = document.getElementById('themeBtn'); if (b) b.textContent = t === 'light' ? 'Dark mode' : 'Light mode';
+  }
+  theme(load('pm_theme', 'dark'));
+  $('#themeBtn').addEventListener('click', function () {
+    var t = document.documentElement.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+    theme(t); save('pm_theme', t);
+  });
+
+  /* ═════════ views ═════════ */
+  function show(id) {
+    ['#loader', '#fatal', '#menuView', '#trackView'].forEach(function (s) { $(s).classList.add('hidden'); });
+    $(id).classList.remove('hidden');
+    updateBar();
+  }
+  function fatal(title, msg) { $('#fatalTitle').textContent = title; $('#fatalMsg').textContent = msg || ''; show('#fatal'); }
+
+  /* ═════════ boot ═════════ */
+  function boot() {
+    if (!configured()) {
+      fatal('This menu is not connected yet', 'Owner: open menu.html and paste your Apps Script Web app URL (ending in /exec) into API_URL at the top of the file.');
+      return;
+    }
+    if (!TABLE) { fatal('Scan the QR code on your table', 'This link has no table number. / इस लिंक में टेबल नंबर नहीं है।'); return; }
+    apiGet('menu', { table: TABLE }).then(function (d) {
+      S.d = d; CUR = d.currency || '₹';
+      document.title = d.appName + ' · Menu';
+      $('#name').textContent = d.appName;
+      $('#tagline').textContent = d.tagline || '';
+      if (!d.table.valid) { fatal('Table not found', d.table.reason); return; }
+      $('#tableNo').textContent = d.table.id.replace(/^T0?/, '') || d.table.id;
+      $('#medal').setAttribute('aria-label', 'Table ' + d.table.id);
+      $('#medal').classList.remove('hidden');
+      var os = $('#openState');
+      os.className = d.open ? 'open' : 'open closed';
+      os.textContent = d.open ? (d.closeTime ? 'Taking orders until ' + d.closeTime : 'Taking orders now') : 'Kitchen closed, opens at ' + (d.openTime || '');
+
+      d.items.forEach(function (i) { S.items[i.id] = i; });
+      var saved = load(CART_KEY, {});
+      Object.keys(saved).forEach(function (id) { if (S.items[id] && saved[id] > 0) S.cart[id] = Math.min(50, saved[id]); });
+      var me = load('pm_me', {});
+      if (me.name) $('#cName').value = me.name;
+      if (me.phone) $('#cPhone').value = me.phone;
+
+      renderTabs(); renderList(); renderNotices();
+      show('#menuView');
+      var act = activeOrders();
+      if (act.length && location.hash === '#track') startTrack(act[act.length - 1]);
+    }).catch(function (e) { fatal('Menu could not open', e.message); });
+  }
+
+  /* ═════════ menu ═════════ */
+  function renderNotices() {
+    var h = '';
+    if (!S.d.open) h += '<div class="notice warn">The kitchen is closed right now, so ordering is paused. You can still browse the menu. / अभी ऑर्डर बंद है।</div>';
+    if (S.d.table.merged) h += '<div class="notice">This table is joined with ' + esc(S.d.table.servingTable) + '. Your order goes on that bill.</div>';
+    var a = activeOrders();
+    if (a.length) h += '<div class="notice">You have ' + a.length + ' order' + (a.length > 1 ? 's' : '') + ' in progress. <button type="button" data-act="track">See status / स्थिति देखें</button></div>';
+    $('#notices').innerHTML = h;
+  }
+
+  function renderTabs() {
+    $('#tabs').innerHTML = S.d.categories.map(function (c, i) {
+      return '<button class="tab' + (i === 0 ? ' on' : '') + '" type="button" data-cat="' + i + '">' + esc(c.name) + '</button>';
+    }).join('');
+  }
+
+  function filtered() {
+    var q = S.q.trim().toLowerCase();
+    return S.d.items.filter(function (i) { return !q || (i.name + ' ' + i.hindi + ' ' + i.description + ' ' + i.category).toLowerCase().indexOf(q) >= 0; });
+  }
+
+  function renderList() {
+    var items = filtered();
+    if (!items.length) {
+      $('#list').innerHTML = '<div class="empty"><b>' + (S.q ? 'No dish matches “' + esc(S.q) + '”' : 'The menu is empty right now') + '</b>' + (S.q ? 'Try another word. / दूसरा शब्द आज़माएँ।' : '') + '</div>';
+      return;
+    }
+    var h = '';
+    S.d.categories.forEach(function (c, idx) {
+      var list = items.filter(function (i) { return i.category === c.name; });
+      if (!list.length) return;
+      h += '<h2 class="section-title" id="cat-' + idx + '">' + esc(c.name) + '</h2><div class="section-count">' + list.length + ' dish' + (list.length > 1 ? 'es' : '') + '</div>';
+      list.forEach(function (i) { h += dish(i); });
+    });
+    $('#list').innerHTML = h;
+  }
+
+  function mark(t) { return t ? '<span class="mark ' + t + '" title="' + (t === 'VEG' ? 'Veg' : t === 'EGG' ? 'Contains egg' : 'Non-veg') + '"><i></i></span>' : ''; }
+
+  function control(i) {
+    var q = S.cart[i.id] || 0;
+    if (q) return '<div class="step"><button type="button" data-dec="' + esc(i.id) + '" aria-label="One less ' + esc(i.name) + '">−</button><span>' + q + '</span><button type="button" data-inc="' + esc(i.id) + '" aria-label="One more ' + esc(i.name) + '">+</button></div>';
+    return '<button class="add" type="button" data-inc="' + esc(i.id) + '"' + (S.d.open ? '' : ' disabled') + ' aria-label="Add ' + esc(i.name) + '">ADD</button>';
+  }
+
+  function dish(i) {
+    var photo = i.image
+      ? '<div class="photo"><img src="' + esc(i.image) + '" alt="' + esc(i.name) + '" loading="lazy" data-emoji="' + esc(i.emoji || '🍽️') + '"></div>'
+      : '<div class="photo" aria-hidden="true">' + esc(i.emoji || '🍽️') + '</div>';
+    return '<article class="dish" id="d-' + esc(i.id) + '">' +
+      '<div class="dish-body">' +
+      (i.tag ? '<div class="tag">' + esc(i.tag) + '</div>' : '') +
+      '<h3>' + mark(i.type) + esc(i.name) + '</h3>' +
+      (i.hindi ? '<div class="hn hi">' + esc(i.hindi) + '</div>' : '') +
+      '<div class="price">' + money(i.price) + '</div>' +
+      (i.description ? '<p class="desc">' + esc(i.description) + '</p>' : '') +
+      '</div><div class="dish-side' + (i.image ? '' : ' no-photo') + '">' + photo + '<div data-ctl="' + esc(i.id) + '">' + control(i) + '</div></div></article>';
+  }
+
+  /* Broken photo → show the emoji instead */
+  document.addEventListener('error', function (e) {
+    var img = e.target;
+    if (img && img.tagName === 'IMG' && img.hasAttribute('data-emoji')) {
+      var box = img.parentNode; box.textContent = img.getAttribute('data-emoji');
+    }
+  }, true);
+
+  /* ═════════ cart ═════════ */
+  function count() { return Object.keys(S.cart).reduce(function (s, k) { return s + S.cart[k]; }, 0); }
+  function totals() {
+    var sub = 0;
+    Object.keys(S.cart).forEach(function (id) { sub += (S.items[id] ? S.items[id].price : 0) * S.cart[id]; });
+    sub = r2(sub);
+    var pct = S.d ? S.d.taxPercent : 0, tax = r2(sub * pct / 100);
+    return { sub: sub, tax: tax, pct: pct, total: r2(sub + tax) };
+  }
+  function change(id, delta) {
+    if (!S.items[id]) return;
+    if (delta > 0 && !S.d.open) { toast('Ordering is paused right now. / अभी ऑर्डर बंद है।', true); return; }
+    var q = (S.cart[id] || 0) + delta;
+    if (q > 50) { q = 50; toast('Maximum 50 of one dish.', true); }
+    if (q <= 0) delete S.cart[id]; else S.cart[id] = q;
+    S.ref = '';
+    save(CART_KEY, S.cart);
+    var ctl = document.querySelector('[data-ctl="' + CSS.escape(id) + '"]');
+    if (ctl) ctl.innerHTML = control(S.items[id]);
+    updateBar(delta > 0);
+    if (!$('#sheet').classList.contains('hidden')) { if (!count()) closeSheet(); else renderCart(); }
+  }
+  function updateBar(pop) {
+    var n = count(), bar = $('#cartbar');
+    bar.classList.toggle('hidden', !n || $('#menuView').classList.contains('hidden'));
+    if (!n) return;
+    $('#cartCount').textContent = n + ' item' + (n > 1 ? 's' : '') + ' / आइटम';
+    $('#cartTotal').textContent = money(totals().total);
+    if (pop) { bar.classList.remove('pop'); void bar.offsetWidth; bar.classList.add('pop'); }
+  }
+  function renderCart() {
+    $('#lines').innerHTML = Object.keys(S.cart).map(function (id) {
+      var i = S.items[id];
+      return '<div class="line"><div class="nm">' + mark(i.type) + '<b>' + esc(i.name) + '</b><div>' + money(i.price) + ' × ' + S.cart[id] + ' = ' + money(i.price * S.cart[id]) + '</div></div>' +
+        '<div class="step"><button type="button" data-dec="' + esc(id) + '" aria-label="One less">−</button><span>' + S.cart[id] + '</span><button type="button" data-inc="' + esc(id) + '" aria-label="One more">+</button></div></div>';
+    }).join('');
+    var t = totals();
+    $('#sum').innerHTML = '<div><span>Items total</span><span>' + money(t.sub) + '</span></div>' +
+      (t.pct ? '<div><span>Tax ' + t.pct + '%</span><span>' + money(t.tax) + '</span></div>' : '') +
+      '<div class="grand"><span>To pay / कुल</span><span>' + money(t.total) + '</span></div>';
+    $('#placeBtn').disabled = !S.d.open;
+  }
+  function openSheet() { renderCart(); $('#sheet').classList.remove('hidden'); $('#scrim').classList.remove('hidden'); document.body.style.overflow = 'hidden'; }
+  function closeSheet() { $('#sheet').classList.add('hidden'); $('#scrim').classList.add('hidden'); document.body.style.overflow = ''; }
+
+  /* ═════════ place order ═════════ */
+  function place() {
+    var name = $('#cName').value.trim(), phone = $('#cPhone').value.replace(/\D/g, '');
+    if (!name) { toast('Please write your name. / नाम लिखें।', true); $('#cName').focus(); return; }
+    if (phone.length < 7 || phone.length > 15) { toast('Please enter a valid mobile number. / सही नंबर लिखें।', true); $('#cPhone').focus(); return; }
+    var items = Object.keys(S.cart).map(function (id) { return { id: id, qty: S.cart[id] }; });
+    if (!items.length) return;
+    if (!S.ref) S.ref = 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    save('pm_me', { name: name, phone: phone });
+    var btn = $('#placeBtn'); btn.disabled = true; btn.textContent = 'Sending your order… / ऑर्डर भेज रहे हैं…';
+    var body = { action: 'order', table: TABLE, name: name, phone: phone, note: $('#cNote').value.trim(), items: items, clientRef: S.ref };
+    // One automatic retry on network failure — the same clientRef means it can never create a duplicate order.
+    apiPost(body).catch(function (e) { if (e.server) throw e; return apiPost(body); }).then(function (o) {
+      S.cart = {}; S.ref = ''; save(CART_KEY, {}); $('#cNote').value = '';
+      remember(o.orderId, phone);
+      closeSheet(); renderList(); updateBar();
+      toast('Order sent to the kitchen / ऑर्डर किचन में पहुँच गया');
+      startTrack({ orderId: o.orderId, phone: phone }, o);
+    }).catch(function (e) {
+      toast(e.message, true);
+      if (/sold out|no longer|refresh/i.test(e.message)) setTimeout(function () { location.reload(); }, 2500);
+    }).then(function () { btn.disabled = false; btn.textContent = 'Place order / ऑर्डर भेजें'; });
+  }
+
+  /* ═════════ my orders on this phone ═════════ */
+  function activeOrders() {
+    var lim = Date.now() - 20 * 3600000;
+    return load(ORDERS_KEY, []).filter(function (o) { return o.t > lim && !o.done; });
+  }
+  function remember(id, phone) {
+    var lim = Date.now() - 20 * 3600000;
+    var l = load(ORDERS_KEY, []).filter(function (o) { return o.t > lim; });
+    l.push({ orderId: id, phone: phone, t: Date.now(), done: false });
+    save(ORDERS_KEY, l.slice(-10));
+  }
+  function markDone(id) { var l = load(ORDERS_KEY, []); l.forEach(function (o) { if (o.orderId === id) o.done = true; }); save(ORDERS_KEY, l); }
+
+  /* ═════════ tracking ═════════ */
+  var STEPS = [['PENDING', 'Received', 'मिला'], ['PREPARING', 'Cooking', 'बन रहा'], ['READY', 'Ready', 'तैयार'], ['SERVED', 'Served', 'परोसा']];
+  var LINES = {
+    PENDING: 'The kitchen has your order and will start it shortly.',
+    PREPARING: 'Your food is being cooked.',
+    READY: 'Your food is ready and on its way to your table.',
+    SERVED: 'Enjoy your meal.'
+  };
+  function startTrack(ref, first) {
+    S.track = ref; S.last = '';
+    try { history.replaceState(null, '', location.pathname + location.search + '#track'); } catch (e) { /* ignore */ }
+    show('#trackView'); window.scrollTo(0, 0);
+    if (first) renderTrack(first); else $('#trackView').innerHTML = '<div class="loader"><i></i>Checking your order…</div>';
+    poll();
+  }
+  function stopTrack() {
+    clearTimeout(S.timer); S.track = null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { /* ignore */ }
+    renderNotices(); show('#menuView');
+  }
+  function poll() {
+    clearTimeout(S.timer);
+    if (!S.track) return;
+    var ref = S.track;
+    apiGet('status', { order: ref.orderId, phone: ref.phone }).then(function (o) {
+      if (!S.track || S.track.orderId !== o.orderId) return;
+      renderTrack(o);
+      if (o.status === 'SERVED' || o.status === 'CANCELLED') { markDone(o.orderId); return; }
+      S.timer = setTimeout(poll, document.hidden ? POLL_MS * 3 : POLL_MS);
+    }).catch(function (e) {
+      if (/not found/i.test(e.message)) { markDone(ref.orderId); toast('That order could not be found.', true); stopTrack(); return; }
+      S.timer = setTimeout(poll, POLL_MS * 2);
+    });
+  }
+  function renderTrack(o) {
+    if (S.last && S.last !== o.status) {
+      if (o.status === 'READY') { chime(); toast('Your food is ready / खाना तैयार है'); }
+      try { if (navigator.vibrate) navigator.vibrate(200); } catch (e) { /* ignore */ }
+    }
+    S.last = o.status; S.order = o; CUR = o.currency || CUR;
+    var idx = STEPS.map(function (s) { return s[0]; }).indexOf(o.status);
+    var h = '<div class="track">' +
+      '<div class="ordno">Order ' + esc(o.orderId) + ' / Table ' + esc(o.table) + '</div>' +
+      '<h2>' + (o.status === 'CANCELLED' ? 'Order cancelled' : esc(STEPS[Math.max(0, idx)][1]) + ' <span class="hi">/ ' + esc(STEPS[Math.max(0, idx)][2]) + '</span>') + '</h2>';
+    if (o.status === 'CANCELLED') {
+      h += '<div class="cancel-box">This order was cancelled by the restaurant. Please ask the staff. / ऑर्डर रद्द हुआ, स्टाफ से पूछें।</div>';
+    } else {
+      h += '<p class="status-line">' + esc(LINES[o.status] || '') + '</p>' +
+        '<div class="progress" aria-hidden="true">' + STEPS.map(function (s, i) {
+          return '<i class="' + (i < idx || o.status === 'SERVED' ? 'done' : i === idx ? 'now' : '') + '"></i>';
+        }).join('') + '</div>' +
+        '<div class="progress-labels">' + STEPS.map(function (s, i) { return '<span class="' + (i <= idx ? 'on' : '') + '">' + s[1] + '</span>'; }).join('') + '</div>';
+    }
+    h += '<div class="bill"><h3>' + esc(o.appName) + '</h3><div class="meta">' + esc(o.time) + ' for ' + esc(o.name) + '</div>' +
+      o.items.map(function (i) { return '<div class="row"><span>' + i.qty + ' × ' + esc(i.name) + '</span><span>' + money(i.amount) + '</span></div>'; }).join('') +
+      '<div class="row hi"><span>Items total</span><span>' + money(o.subtotal) + '</span></div>' +
+      (o.tax ? '<div class="row hi"><span>Tax ' + esc(o.taxPercent) + '%</span><span>' + money(o.tax) + '</span></div>' : '') +
+      '<div class="row t"><span>To pay</span><span>' + money(o.total) + '</span></div></div>';
+    if (o.points !== null && o.points !== undefined) {
+      h += '<div class="points">You have <b>' + esc(o.points) + ' loyalty points</b>. Points are added once your order is served.</div>';
+    }
+    h += '<button class="secondary" type="button" data-act="print">Print bill / बिल प्रिंट करें</button>' +
+      (o.whatsappUrl ? '<a class="secondary" href="' + esc(o.whatsappUrl) + '" target="_blank" rel="noopener">Send order on WhatsApp</a>' : '') +
+      '<button class="primary" type="button" data-act="back">Order more / और मँगाएँ</button>';
+    var others = activeOrders().filter(function (a) { return a.orderId !== o.orderId; });
+    if (others.length) h += others.map(function (a) { return '<button class="secondary" type="button" data-track="' + esc(a.orderId) + '">See order ' + esc(a.orderId) + '</button>'; }).join('');
+    $('#trackView').innerHTML = h + '</div>';
+  }
+  function printBill() {
+    var o = S.order; if (!o) return;
+    $('#printArea').innerHTML = '<div style="text-align:center"><b>' + esc(o.appName) + '</b><br>Table ' + esc(o.table) + ' / ' + esc(o.orderId) + '<br>' + esc(o.time) + '<br>' + esc(o.name) + '</div><hr>' +
+      o.items.map(function (i) { return '<div class="row"><span>' + i.qty + ' x ' + esc(i.name) + '</span><span>' + money(i.amount) + '</span></div>'; }).join('') + '<hr>' +
+      '<div class="row"><span>Subtotal</span><span>' + money(o.subtotal) + '</span></div>' +
+      (o.tax ? '<div class="row"><span>Tax</span><span>' + money(o.tax) + '</span></div>' : '') +
+      '<div class="row"><b>TOTAL</b><b>' + money(o.total) + '</b></div><hr><div style="text-align:center">Thank you / धन्यवाद</div>';
+    setTimeout(function () { window.print(); }, 50);
+  }
+
+  var ac = null;
+  function chime() {
+    try {
+      ac = ac || new (window.AudioContext || window.webkitAudioContext)();
+      [0, .22].forEach(function (d, k) {
+        var o = ac.createOscillator(), g = ac.createGain();
+        o.frequency.value = k ? 1046 : 784; o.type = 'sine';
+        g.gain.setValueAtTime(.22, ac.currentTime + d); g.gain.exponentialRampToValueAtTime(.001, ac.currentTime + d + .5);
+        o.connect(g); g.connect(ac.destination); o.start(ac.currentTime + d); o.stop(ac.currentTime + d + .52);
+      });
+    } catch (e) { /* no sound */ }
+  }
+
+  /* ═════════ events ═════════ */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-inc],[data-dec],[data-cat],[data-act],[data-track]');
+    if (!t) return;
+    if (t.hasAttribute('data-inc')) change(t.getAttribute('data-inc'), 1);
+    else if (t.hasAttribute('data-dec')) change(t.getAttribute('data-dec'), -1);
+    else if (t.hasAttribute('data-cat')) {
+      document.querySelectorAll('.tab').forEach(function (b) { b.classList.remove('on'); });
+      t.classList.add('on');
+      var el = document.getElementById('cat-' + t.getAttribute('data-cat'));
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else if (t.hasAttribute('data-track')) {
+      var ref = activeOrders().filter(function (a) { return a.orderId === t.getAttribute('data-track'); })[0];
+      if (ref) startTrack(ref);
+    } else {
+      var a = t.getAttribute('data-act');
+      if (a === 'back') stopTrack();
+      else if (a === 'print') printBill();
+      else if (a === 'track') { var l = activeOrders(); if (l.length) startTrack(l[l.length - 1]); }
+    }
+  });
+  $('#cartBtn').addEventListener('click', openSheet);
+  $('#closeSheet').addEventListener('click', closeSheet);
+  $('#scrim').addEventListener('click', closeSheet);
+  $('#placeBtn').addEventListener('click', place);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeSheet(); });
+  var qt = null;
+  $('#q').addEventListener('input', function (e) { clearTimeout(qt); qt = setTimeout(function () { S.q = e.target.value; renderList(); }, 140); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && S.track) poll(); });
+
+  /* Highlight the category tab of the section being read */
+  window.addEventListener('scroll', function () {
+    if ($('#menuView').classList.contains('hidden') || !S.d) return;
+    var cur = null;
+    document.querySelectorAll('.section-title').forEach(function (h) { if (h.getBoundingClientRect().top < 160) cur = h.id.replace('cat-', ''); });
+    if (cur === null) return;
+    document.querySelectorAll('.tab').forEach(function (b) {
+      var on = b.getAttribute('data-cat') === cur;
+      if (on && !b.classList.contains('on')) b.scrollIntoView({ inline: 'center', block: 'nearest' });
+      b.classList.toggle('on', on);
+    });
+  }, { passive: true });
+
+  boot();
+})();
+</script>
+</body>
+</html>
